@@ -5,13 +5,16 @@
  *      Author: jiaxindu
  */
 
+#include <hv_ctrl.h>
 #include <string.h>
 #include "usb_cmd.h"
 #include "dbg_print.h"
-#include "curr_ctrl.h"
+#include "hv_ctrl.h"
 
 extern uint32_t gUID[3]; //UID is 96 bits == 12 bytes, defined in main.c
 uint8_t tmp_str[128];
+
+extern THV_State gHV_State;
 
 // read a integer from string
 static uint16_t read_uint(uint32_t *x_val, uint8_t *x_str, uint16_t x_len)
@@ -101,13 +104,13 @@ void USB_Cmd_Proc(uint8_t *x_data, uint32_t x_len)
    uint8_t cmd_char = 0;
    uint8_t is_val_changed = 0;
 
-   uint8_t idx;
+   //uint8_t idx;
    double tmp_val;
 
    if (tmp_ptr == NULL)
       return;
 
-   DPrint_CStr("> ");
+   DPrint_Putc('>');
    DPrint(x_data, x_len);
 
    /* skip leading and trailing space */
@@ -142,16 +145,32 @@ void USB_Cmd_Proc(uint8_t *x_data, uint32_t x_len)
    else if ((*tmp_ptr == 'x' || *tmp_ptr == 'X')) {
       cmd_char = 'x';
       tmp_ptr += 1;
+      HV_Cmd(CMD_BIAS_OFF, 0., 0.);
+      is_val_changed = 1;
    }
-   //enable bias voltage
+   //start bias voltage
    else if ((*tmp_ptr == 'o' || *tmp_ptr == 'O')) {
       cmd_char = 'o';
       tmp_ptr += 1;
-   } else if (*tmp_ptr == 's' || *tmp_ptr == 'S') {
+      HV_Cmd(CMD_BIAS_ON, 0., 0.);
+      is_val_changed = 1;
+   }
+   //print out state
+   else if (*tmp_ptr == 's' || *tmp_ptr == 'S') {
       cmd_char = 's';
       tmp_ptr += 1;
-   } else {
-      DPrint_CStr("Unknown action: '");
+   }
+   else if (*tmp_ptr == 'h' || *tmp_ptr == 'H') {
+      DPrint_CStr("Available commands:\r\n");
+      DPrint_CStr("  v=<float>: set voltage output.\r\n");
+      DPrint_CStr("  i=<float>: set current output.\r\n");
+      DPrint_CStr("  x: stop bias voltage.\r\n");
+      DPrint_CStr("  o: enable bias voltage.\r\n");
+      DPrint_CStr("  s: print out current state.\r\n");
+      return;
+   }
+   else {
+      DPrint_CStr("Unknown action: '0x");
       DPrint_Hexify(tmp_ptr, tmp_ptr_end - tmp_ptr);
       DPrint_CStr("'.\r\n");
       return;
@@ -166,20 +185,57 @@ void USB_Cmd_Proc(uint8_t *x_data, uint32_t x_len)
          DPrint_CStr("'.\r\n");
          return;
       } else { // value is valid
-         if (cmd_char == 'v') {  // frequency
+         if (cmd_char == 'v') {  // voltage
             DPrint_CStr("PWR|Setting voltage to ");
             DPrint_Float(tmp_val, 3);
             DPrint_CStr(" V.\r\n");
-            Curr_Ctrl_Set(CMD_SET_VOLT_NO_CURR, 0., tmp_val);
+            HV_Cmd(CMD_SET_VOLT_NO_CURR, 0., tmp_val);
             is_val_changed = 1;
          } else if (cmd_char == 'i') { // bandwidth
             DPrint_CStr("PWR|Setting current output to ");
             DPrint_Float(tmp_val, 3);
             DPrint_CStr(" A.\r\n");
-            Curr_Ctrl_Set(CMD_SET_CURR, tmp_val, 0.);
+            HV_Cmd(CMD_SET_CURR, tmp_val, 0.);
             is_val_changed = 1;
          }
       }
+   }
+
+   if (cmd_char == 's') {
+       DPrint_CStr("Current state:\r\n");
+       HV_State_Print();
+   }
+   else if (is_val_changed == 1 || (tmp_ptr < tmp_ptr_end && *tmp_ptr == '?')) {
+      if (cmd_char == 'i') {
+         DPrint_CStr("target current: ");
+         DPrint_Num(gHV_State.curr_tgt);
+         DPrint_CStr("A, current set: ");
+         DPrint_Num(gHV_State.curr_set);
+         DPrint_CStr("A, measured current: ");
+         DPrint_Num(gHV_State.curr_meas);
+         DPrint_CStr("A.\r\n");
+      }
+      if (cmd_char == 'v') {
+         DPrint_CStr("target voltage: ");
+         DPrint_Num(gHV_State.volt_tgt);
+         DPrint_CStr("V, voltage set: ");
+         DPrint_Num(gHV_State.volt_set);
+         DPrint_CStr("V, measured voltage: ");
+         DPrint_Num(gHV_State.vcoil_meas);
+         DPrint_CStr("V.\r\n");
+      }
+      if (cmd_char == 'o' || cmd_char == 'x') {
+         DPrint_CStr("bias voltage: ");
+         if (gHV_State.bias_on) {
+            DPrint_CStr("ON.\r\n");
+         } else {
+            DPrint_CStr("OFF.\r\n");
+         }
+      }
+   } else {
+      DPrint_CStr("Unknown action: '");
+      DPrint(x_data, tmp_ptr_end - x_data);
+      DPrint_CStr("'.\r\n");
    }
 
    DPrint_CStr("-----\r\n");

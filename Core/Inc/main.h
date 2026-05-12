@@ -59,8 +59,14 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define OSC_IN_Pin GPIO_PIN_0
 #define OSC_IN_GPIO_Port GPIOH
+#define CURR_SENSE_BUFF_Pin GPIO_PIN_0
+#define CURR_SENSE_BUFF_GPIO_Port GPIOA
+#define VGND_SENSE_Pin GPIO_PIN_1
+#define VGND_SENSE_GPIO_Port GPIOA
 #define SYNC_FB_Pin GPIO_PIN_3
 #define SYNC_FB_GPIO_Port GPIOA
+#define COIL_PWR_SENSE_Pin GPIO_PIN_6
+#define COIL_PWR_SENSE_GPIO_Port GPIOA
 #define AMP_VDROP_SENSE_Pin GPIO_PIN_4
 #define AMP_VDROP_SENSE_GPIO_Port GPIOC
 #define ZERO_CROSS_DETECT_Pin GPIO_PIN_2
@@ -77,8 +83,8 @@ void Error_Handler(void);
 #define HV_EN_MCU_GPIO_Port GPIOE
 #define DAC_LOADN_Pin GPIO_PIN_10
 #define DAC_LOADN_GPIO_Port GPIOB
-#define DAC_SPI_NSS_Pin GPIO_PIN_12
-#define DAC_SPI_NSS_GPIO_Port GPIOB
+#define DAC_SPI_CSN_Pin GPIO_PIN_12
+#define DAC_SPI_CSN_GPIO_Port GPIOB
 #define DAC_SPI_SCK_Pin GPIO_PIN_13
 #define DAC_SPI_SCK_GPIO_Port GPIOB
 #define DAC_SPI_DOUT_Pin GPIO_PIN_14

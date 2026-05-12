@@ -60,6 +60,7 @@ void EXTI9_IRQHandler(void);
 void EXTI10_IRQHandler(void);
 void EXTI12_IRQHandler(void);
 void GPDMA1_Channel0_IRQHandler(void);
+void GPDMA1_Channel1_IRQHandler(void);
 void ADC1_IRQHandler(void);
 void TIM2_IRQHandler(void);
 void USB_DRD_FS_IRQHandler(void);

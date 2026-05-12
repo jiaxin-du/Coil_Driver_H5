@@ -23,8 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usb.h"
-#include "curr_ctrl.h"
 #include "dbg_print.h"
+#include "hv_ctrl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +61,9 @@ extern ADC_HandleTypeDef   hadc1;
 extern DMA_NodeTypeDef Node_GPDMA1_Channel0;
 extern DMA_QListTypeDef List_GPDMA1_Channel0;
 extern DMA_HandleTypeDef handle_GPDMA1_Channel0;
+extern DMA_NodeTypeDef Node_GPDMA1_Channel1;
+extern DMA_QListTypeDef List_GPDMA1_Channel1;
+extern DMA_HandleTypeDef handle_GPDMA1_Channel1;
 extern ADC_HandleTypeDef hadc1;
 extern I2C_HandleTypeDef hi2c4;
 extern TIM_HandleTypeDef htim2;
@@ -227,7 +230,7 @@ void EXTI9_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_IRQn 0 */
   //Overtemp_Anyn
-  Overtemp_Callback();
+   Overtemp_Callback();
   /* USER CODE END EXTI9_IRQn 0 */
   /* USER CODE BEGIN EXTI9_IRQn 1 */
 
@@ -277,6 +280,20 @@ void GPDMA1_Channel0_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles GPDMA1 Channel 1 global interrupt.
+  */
+void GPDMA1_Channel1_IRQHandler(void)
+{
+  /* USER CODE BEGIN GPDMA1_Channel1_IRQn 0 */
+
+  /* USER CODE END GPDMA1_Channel1_IRQn 0 */
+  HAL_DMA_IRQHandler(&handle_GPDMA1_Channel1);
+  /* USER CODE BEGIN GPDMA1_Channel1_IRQn 1 */
+
+  /* USER CODE END GPDMA1_Channel1_IRQn 1 */
+}
+
+/**
   * @brief This function handles ADC1 global interrupt.
   */
 void ADC1_IRQHandler(void)
@@ -296,9 +313,8 @@ void ADC1_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-
+   Curr_Regulate_Callback();
   /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
 
   /* USER CODE END TIM2_IRQn 1 */

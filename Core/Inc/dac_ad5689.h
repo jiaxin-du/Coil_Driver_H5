@@ -20,30 +20,32 @@ extern "C" {
 #define DAC_CH_VOLT                 DAC_CH_A  // DAC channel A
 #define DAC_CH_CURR                 DAC_CH_B  // DAC channel B
 
-// set all DAC channels to output 0V
-void Dac_Init(void);
+// set DAC output
+void Dac_Set(uint8_t x_chn, float x_volt);
+
+void Dac_Preload(uint8_t x_chn, float x_volt);
 
 /* Set expected coil power voltage
  NB, call this function directly may mess up the states of the internal control.
  Users should use function provided in curr_ctrl to set voltage and current
 */
-TState Dac_Volt_Ctrl_Set(double x_volt);
+TState Dac_Volt_Ctrl_Set(float x_volt);
 
 /* Preload expected coil power voltage
  * The voltage will not load until !LOAD! is pulled low by PWM on CH3 TIM2
  */
-TState Dac_Volt_Ctrl_Preload(double x_volt);
+TState Dac_Volt_Ctrl_Preload(float x_volt);
 
 /* Set expected output current amplitude
  NB, call this function directly may mess up the states of the internal control.
  Users should use function provided in curr_ctrl to set voltage and current
 */
-TState Dac_Curr_Ctrl_Set(double x_curr);
+TState Dac_Curr_Ctrl_Set(float x_curr);
 
 /* Preload expected output current amplitude
  * The voltage will not load until !LOAD! is pulled low by PWM on CH3 TIM2
  */
-TState Dac_Curr_Ctrl_Preload(double x_curr);
+TState Dac_Curr_Ctrl_Preload(float x_curr);
 
 #ifdef __cplusplus
 }

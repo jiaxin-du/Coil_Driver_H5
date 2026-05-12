@@ -9,7 +9,6 @@
 #include "tmp_tmp1075.h"
 #include "dbg_print.h"
 
-
 #define TMP1075_REG_RESULT  (0x00)
 #define TMP1075_REG_CFG     (0x01)
 #define TMP1075_REG_LOW     (0x02)

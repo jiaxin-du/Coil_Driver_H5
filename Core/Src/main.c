@@ -34,7 +34,8 @@
 #include "usbd_cdc_if.h"
 #include "dbg_print.h"
 #include "tmp_tmp1075.h"
-#include "curr_ctrl.h"
+#include "hv_ctrl.h"
+#include "usb_cmd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,9 +74,12 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 extern uint8_t  gUSBCmdBuff[USB_CMD_SIZE_MAX];
 extern uint16_t gUSBCmdSize;
 
-extern uint8_t  adc_updated;
+extern uint8_t adc_updating;
 extern ADC_HandleTypeDef   hadc1;
 extern TIM_HandleTypeDef   htim3;
+
+extern THV_State gHV_State;
+
 uint32_t gUID[3]; //UID is 96 bits == 12 bytes
 
 /* USER CODE END 0 */
@@ -90,6 +94,11 @@ int main(void)
   /* USER CODE BEGIN 1 */
   uint32_t tmp_cnt = 0;
 
+  uint8_t tmp_step = 0;
+
+  THV_State HV_State_Pre;
+
+  //UID cannot be read when after MPU is configured, so read it here before that
   gUID[0] = HAL_GetUIDw0();
   gUID[1] = HAL_GetUIDw1();
   gUID[2] = HAL_GetUIDw2();
@@ -141,37 +150,68 @@ int main(void)
 
   Temp_Init();
 
-  Curr_Ctrl_Reset();
+  HV_init();
 
   //HAL_TIM_Base_Start(&htim2);
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+  //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HV_State_Pre = gHV_State;
+
   while (1)
   {
      if (gUSBCmdSize != 0) {
-        DPrint_Num(gUSBCmdSize);
-        DPrint("\r\n", 2);
-        DPrint("> ", 2);
-        DPrint(gUSBCmdBuff, gUSBCmdSize);
+        USB_Cmd_Proc(gUSBCmdBuff, gUSBCmdSize);
 
         gUSBCmdSize = 0;
      }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if (HV_State_Pre.state != gHV_State.state) {
+       DPrint_CStr("HV state changed: ");
+       DPrint(HV_CMD_STR[(uint8_t)HV_State_Pre.state], HV_CMD_STR_LEN[(uint8_t)HV_State_Pre.state]);
+       DPrint_CStr(" -> ");
+       DPrint(HV_CMD_STR[(uint8_t)gHV_State.state], HV_CMD_STR_LEN[(uint8_t)HV_State_Pre.state]);
+       DPrint_CStr("\r\n");
+       HV_State_Pre.state = gHV_State.state;
+    }
+    if (HV_State_Pre.fault != gHV_State.fault) {
+       DPrint_CStr("HV fault changed: ");
+       DPrint_Hex((uint8_t)HV_State_Pre.fault);
+       DPrint_CStr(" -> ");
+       DPrint_Hex((uint8_t)gHV_State.fault);
+       DPrint_CStr("\r\n");
+       HV_State_Pre.fault = gHV_State.fault;
+    }
 
-     ++ tmp_cnt;
-     if(tmp_cnt == 30000000) {
-        Temp_Read_Init();
-        tmp_cnt = 0;
-        if (adc_updated == 1) {
-           Curr_State_Print();
-           adc_updated = 0;
-        }
-     }
+    if (gHV_State.bias_on == 1 && HV_State_Pre.bias_on == 0) {
+       DPrint_CStr("HV bias volt: OFF -> ON.\r\n");
+    } else if (gHV_State.bias_on == 0 && HV_State_Pre.bias_on == 1) {
+       DPrint_CStr("HV bias volt: ON -> OFF.\r\n");
+    }
+    HV_State_Pre.bias_on = gHV_State.bias_on;
+
+    if (HV_State_Pre.curr_tgt != gHV_State.curr_tgt) {
+       DPrint_CStr("HV target current changed: ");
+       DPrint_Float(HV_State_Pre.curr_tgt, 3);
+       DPrint_CStr("A -> ");
+       DPrint_Float(gHV_State.curr_tgt, 3);
+       DPrint_CStr("A.\r\n");
+       HV_State_Pre.curr_tgt = gHV_State.curr_tgt;
+    }
+    if (HV_State_Pre.volt_tgt != gHV_State.volt_tgt) {
+       DPrint_CStr("HV target voltage changed: ");
+       DPrint_Float(HV_State_Pre.volt_tgt, 3);
+       DPrint_CStr("V -> ");
+       DPrint_Float(gHV_State.volt_tgt, 3);
+       DPrint_CStr("V.\r\n");
+       HV_State_Pre.volt_tgt = gHV_State.volt_tgt;
+    }
+
   }
   /* USER CODE END 3 */
 }

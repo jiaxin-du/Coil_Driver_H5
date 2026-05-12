@@ -39,12 +39,12 @@ void MX_SPI2_Init(void)
   /* USER CODE END SPI2_Init 1 */
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES_TXONLY;
   hspi2.Init.DataSize = SPI_DATASIZE_24BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_HARD_INPUT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -52,8 +52,8 @@ void MX_SPI2_Init(void)
   hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
   hspi2.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
   hspi2.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
-  hspi2.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-  hspi2.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
+  hspi2.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_02CYCLE;
+  hspi2.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_02CYCLE;
   hspi2.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
   hspi2.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
   hspi2.Init.IOSwap = SPI_IO_SWAP_DISABLE;
@@ -99,7 +99,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
     */
-    GPIO_InitStruct.Pin = DAC_SPI_NSS_Pin|DAC_SPI_SCK_Pin|DAC_SPI_DOUT_Pin|DAC_SPI_DIN_Pin;
+    GPIO_InitStruct.Pin = DAC_SPI_CSN_Pin|DAC_SPI_SCK_Pin|DAC_SPI_DOUT_Pin|DAC_SPI_DIN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -129,7 +129,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     PB14     ------> SPI2_MISO
     PB15     ------> SPI2_MOSI
     */
-    HAL_GPIO_DeInit(GPIOB, DAC_SPI_NSS_Pin|DAC_SPI_SCK_Pin|DAC_SPI_DOUT_Pin|DAC_SPI_DIN_Pin);
+    HAL_GPIO_DeInit(GPIOB, DAC_SPI_CSN_Pin|DAC_SPI_SCK_Pin|DAC_SPI_DOUT_Pin|DAC_SPI_DIN_Pin);
 
   /* USER CODE BEGIN SPI2_MspDeInit 1 */
 

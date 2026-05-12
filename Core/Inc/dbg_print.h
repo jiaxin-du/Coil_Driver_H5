@@ -74,9 +74,9 @@ void DPrint_Float(double x_val, uint8_t x_decimals);
 
 #define DPrint_Hex(x_var)   _Generic((x_var),                         \
                                uint8_t:    DPrint_Hex_UInt8(x_var),   \
-                               uint16_t:   DPrint_UInt16(x_var),      \
-                               uint32_t:   DPrint_UInt32(x_var),      \
-                               default:    DPrint_UInt32(x_var))
+                               uint16_t:   DPrint_Hex_UInt16(x_var),      \
+                               uint32_t:   DPrint_Hex_UInt32(x_var),      \
+                               default:    DPrint_Hex_UInt32(x_var))
 
 #ifdef __cplusplus
 }
